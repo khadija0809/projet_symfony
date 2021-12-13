@@ -64,6 +64,17 @@ class Produit
      */
     private $qte_maximum;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=Categorie::class, inversedBy="produits")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $categorie;
+
+    /**
+     * @ORM\OneToMany(targetEntity=LignePanier::class, mappedBy="produit", orphanRemoval=true)
+     */
+    private $lignePaniers;
+
     public function __construct()
     {
         $this->lignePaniers = new ArrayCollection();
@@ -178,6 +189,48 @@ class Produit
     public function setQteMaximum(int $qte_maximum): self
     {
         $this->qte_maximum = $qte_maximum;
+
+        return $this;
+    }
+
+    public function getCategorie(): ?Categorie
+    {
+        return $this->categorie;
+    }
+
+    public function setCategorie(?Categorie $categorie): self
+    {
+        $this->categorie = $categorie;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|LignePanier[]
+     */
+    public function getLignePaniers(): Collection
+    {
+        return $this->lignePaniers;
+    }
+
+    public function addLignePanier(LignePanier $lignePanier): self
+    {
+        if (!$this->lignePaniers->contains($lignePanier)) {
+            $this->lignePaniers[] = $lignePanier;
+            $lignePanier->setProduit($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLignePanier(LignePanier $lignePanier): self
+    {
+        if ($this->lignePaniers->removeElement($lignePanier)) {
+            // set the owning side to null (unless already changed)
+            if ($lignePanier->getProduit() === $this) {
+                $lignePanier->setProduit(null);
+            }
+        }
 
         return $this;
     }

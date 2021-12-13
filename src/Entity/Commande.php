@@ -34,6 +34,28 @@ class Commande
      */
     private $date_commande;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=Adresse::class, inversedBy="commandes")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $adresse;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Client::class, inversedBy="commandes")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $client;
+
+    /**
+     * @ORM\OneToMany(targetEntity=PanierCommande::class, mappedBy="commande")
+     */
+    private $panier;
+
+    public function __construct()
+    {
+        $this->panier = new ArrayCollection();
+    }
+
 
     public function getId(): ?int
     {
@@ -72,6 +94,60 @@ class Commande
     public function setDateCommande(\DateTimeInterface $date_commande): self
     {
         $this->date_commande = $date_commande;
+
+        return $this;
+    }
+
+    public function getAdresse(): ?Adresse
+    {
+        return $this->adresse;
+    }
+
+    public function setAdresse(?Adresse $adresse): self
+    {
+        $this->adresse = $adresse;
+
+        return $this;
+    }
+
+    public function getClient(): ?Client
+    {
+        return $this->client;
+    }
+
+    public function setClient(?Client $client): self
+    {
+        $this->client = $client;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|PanierCommande[]
+     */
+    public function getPanier(): Collection
+    {
+        return $this->panier;
+    }
+
+    public function addPanier(PanierCommande $panier): self
+    {
+        if (!$this->panier->contains($panier)) {
+            $this->panier[] = $panier;
+            $panier->setCommande($this);
+        }
+
+        return $this;
+    }
+
+    public function removePanier(PanierCommande $panier): self
+    {
+        if ($this->panier->removeElement($panier)) {
+            // set the owning side to null (unless already changed)
+            if ($panier->getCommande() === $this) {
+                $panier->setCommande(null);
+            }
+        }
 
         return $this;
     }

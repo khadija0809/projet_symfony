@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\AdresseRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -43,16 +45,20 @@ class Adresse
     private $complement_adresse;
 
     /**
-     * @ORM\ManyToOne(targetEntity=client::class, inversedBy="adresses")
+     * @ORM\ManyToOne(targetEntity=Client::class, inversedBy="adresses")
      * @ORM\JoinColumn(nullable=false)
      */
     private $client;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Commande::class, inversedBy="adresse")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\OneToMany(targetEntity=Commande::class, mappedBy="adresse")
      */
-    private $commande;
+    private $commandes;
+
+    public function __construct()
+    {
+        $this->commandes = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -119,26 +125,44 @@ class Adresse
         return $this;
     }
 
-    public function getClient(): ?client
+    public function getClient(): ?Client
     {
         return $this->client;
     }
 
-    public function setClient(?client $client): self
+    public function setClient(?Client $client): self
     {
         $this->client = $client;
 
         return $this;
     }
 
-    public function getCommande(): ?Commande
+    /**
+     * @return Collection|Commande[]
+     */
+    public function getCommandes(): Collection
     {
-        return $this->commande;
+        return $this->commandes;
     }
 
-    public function setCommande(?Commande $commande): self
+    public function addCommande(Commande $commande): self
     {
-        $this->commande = $commande;
+        if (!$this->commandes->contains($commande)) {
+            $this->commandes[] = $commande;
+            $commande->setAdresse($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommande(Commande $commande): self
+    {
+        if ($this->commandes->removeElement($commande)) {
+            // set the owning side to null (unless already changed)
+            if ($commande->getAdresse() === $this) {
+                $commande->setAdresse(null);
+            }
+        }
 
         return $this;
     }
